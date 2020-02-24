@@ -1,13 +1,11 @@
 import { expect } from "chai";
 import { shallowMount } from "@vue/test-utils";
-import HelloWorld from "@/components/HelloWorld.vue";
+import ProductListPage from "@/components/ProductListPage.vue";
 
-describe("HelloWorld.vue", () => {
-  it("renders props.msg when passed", () => {
-    const msg = "new message";
-    const wrapper = shallowMount(HelloWorld, {
-      propsData: { msg }
-    });
+describe("ProductListPage.vue", () => {
+  it("renders Add or Scan title", () => {
+    const msg = "Add or Scan Your Free Key";
+    const wrapper = shallowMount(ProductListPage, {});
     expect(wrapper.text()).to.include(msg);
   });
 });
