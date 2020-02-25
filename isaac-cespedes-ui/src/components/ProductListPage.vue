@@ -1,51 +1,95 @@
 <template lang="pug">
   v-container
+    //- headers
     v-row
       v-col(class="pb-1 pl-4 deep-orange--text" cols="12")
         h1(class="font-weight-black") Add or Scan Your Free Key
     v-row
       v-col(class="pl-4 cyan--text" cols="12")
         h2(class="pb-0 font-weight-bold cyanUnderline") FREE DELIVERY
-    v-row(class="keysPage")
-      v-col(cols="4")
+    //- keys
+    v-row(justify="space-around")
+      v-col(v-for="i in range(startIndex, endIndex)" :key="keyCatalog[i].id" cols="4")
+        //- image (incl. special case for drill keys)
+        v-row(v-if="keyCatalog[i].display_name === 'Drill'"
+        class="mb-4" justify="center" style="margin-top: 50px;")
+          img(class="keyImage" :src="keyCatalog[i].imageURL")
+        v-row(v-else justify="center")
+          img(class="keyImage" :src="keyCatalog[i].imageURL")
+        //- name and price
         v-row(justify="center")
-          v-col
-          v-col
-            img(class="keyImage" src="https://s3.amazonaws.com/key_style_images/staging/kw1/normal/california_republic/retina.png?1540418398")
-            p(class="mb-0") California Republic
-            p(class="grey--text") $7.99
-            v-btn(large class="deep-orange white--text" href="#" text)
-              span(class="mr-2") Add to Cart
-              v-icon mdi-cart-plus
-          v-col
-      v-col(cols="4")
+          p(class="mb-0") {{keyCatalog[i].display_name}}
         v-row(justify="center")
-          v-col
-          v-col
-            img(class="keyImage" src="https://s3.amazonaws.com/key_style_images/staging/kw1/normal/california_republic/retina.png?1540418398")
-            p(class="mb-0") California Republic
-            p(class="grey--text") $7.99
-            v-btn(large class="deep-orange white--text" href="#" text)
-              span(class="mr-2") Add to Cart
-              v-icon mdi-cart-plus
-          v-col
-      v-col(cols="4")
-        v-row(justify="center")
-          v-col
-          v-col
-            img(class="keyImage" src="https://s3.amazonaws.com/key_style_images/staging/kw1/normal/california_republic/retina.png?1540418398")
-            p(class="mb-0") California Republic
-            p(class="grey--text") $7.99
-            v-btn(large class="deep-orange white--text" href="#" text)
-              span(class="mr-2") Add to Cart
-              v-icon mdi-cart-plus
-          v-col
+          p(class="grey--text") ${{keyCatalog[i].cost}}
+        //- quantity controls
+        v-row(v-if="keyCatalog[i].quantity === 0" @click="updateQuantity(i, 1)" justify="center")
+          v-btn(large class="deep-orange white--text" text)
+            span(class="mr-2") Add to Cart
+            v-icon mdi-cart-plus
+        v-row(v-else justify="center")
+          v-btn(large icon @click="updateQuantity(i, -1)" class="deep-orange--text" text)
+            v-icon mdi-minus
+          h3(class="ml-8 mr-8 pt-2") {{ keyCatalog[i].quantity }}
+          v-btn(large icon @click="updateQuantity(i, 1)" class="deep-orange--text" text)
+            v-icon mdi-plus
+    //- pagination controls
+    v-row(class="mt-7 mb-7" justify="center")
+      v-btn(rounded @click="pageChange(-1)" class="grey lighten-1 white--text")
+        v-icon mdi-chevron-left
+      v-btn(class="mr-2 ml-2" text disabled)
+        h3(class="grey--text") {{pageNumber+1}} of {{totalPages}}
+      v-btn(rounded @click="pageChange(1)" class="grey lighten-1 white--text")
+        v-icon mdi-chevron-right
 </template>
 
 <script>
+import jsonFile from "../../../data.json";
 export default {
   name: "ProductListPage",
-  data: () => ({})
+  data: () => ({
+    keyCatalog: jsonFile,
+    startIndex: 0,
+    endIndex: 0,
+    pageNumber: 0,
+    totalPages: 0,
+    PAGE_SIZE: 9
+  }),
+  methods: {
+    pageChange: function(n) {
+      // keep page in bounds
+      this.pageNumber = this.pageNumber + n;
+      this.pageNumber = Math.max(this.pageNumber, 0);
+      this.pageNumber = Math.min(this.pageNumber, this.totalPages - 1);
+
+      // keep page items in bounds
+      this.startIndex = Math.max(this.pageNumber * this.PAGE_SIZE, 0);
+      this.endIndex = Math.min(
+        this.startIndex + this.PAGE_SIZE - 1,
+        this.keyCatalog.length - 1
+      );
+    },
+    range: function(a, b) {
+      let retVal = [];
+      for (let i = a; i <= b; i++) {
+        retVal.push(i);
+      }
+      return retVal;
+    },
+    updateQuantity: function(i, n) {
+      // it must be done this way so that Vue rerenders the list items
+      let newKeyItem = this.keyCatalog[i];
+      newKeyItem.quantity += n;
+      this.keyCatalog.splice(i, 1, newKeyItem);
+    }
+  },
+  beforeMount() {
+    this.keyCatalog = this.keyCatalog.map(k => {
+      k.quantity = 0;
+      return k;
+    });
+    this.totalPages = Math.ceil(this.keyCatalog.length / this.PAGE_SIZE);
+    this.pageChange(0);
+  }
 };
 </script>
 
@@ -54,12 +98,7 @@ export default {
   border-bottom: 3px solid #00bcd4;
 }
 
-.keysPage {
-  padding-left: 12px;
-}
-
 .keyImage {
   transform: rotate(-45deg);
-  // background-image: radial-gradient(#e0e0e0, #f5f5f5, rgba(0, 0, 0, 0));
 }
 </style>
