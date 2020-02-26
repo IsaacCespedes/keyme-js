@@ -40,6 +40,11 @@
         h3(class="grey--text") {{pageNumber+1}} of {{totalPages}}
       v-btn(rounded @click="pageChange(1)" class="grey lighten-1 white--text")
         v-icon mdi-chevron-right
+    //- checkout button
+    v-row(class="mt-7 mb-7" justify="end")
+      v-btn(x-large @click="goToCheckout()" class="green darken-2 white--text" text)
+        span(class="mr-2") Checkout
+        v-icon mdi-cart-arrow-right
 </template>
 
 <script>
@@ -55,6 +60,11 @@ export default {
     PAGE_SIZE: 9
   }),
   methods: {
+    goToCheckout: function() {
+      this.$router.replace({
+        name: "CheckoutPage"
+      });
+    },
     pageChange: function(n) {
       // keep page in bounds
       this.pageNumber = this.pageNumber + n;
