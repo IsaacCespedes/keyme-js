@@ -1,7 +1,11 @@
 cd isaac-cespedes-ui
+
 npm install
+
 npm run test:unit
+
 npm run test:e2e
+
 npm run serve
 
 Todo : Disable checkout button unless there is a quantity. Further develop confirmation modal.
